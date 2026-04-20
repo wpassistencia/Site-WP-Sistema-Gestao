@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Assistência - Sistema de Gestão</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* Configurações gerais da página - Fundo escuro inspirado no seu software */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e; /* Fundo escuro igual ao da foto */
+            color: #f5f5f5;
+        }
+
+        /* Estilo do Cabeçalho - Moderno e com gradiente */
+        header {
+            background: linear-gradient(135deg, #2b2b2b, #151515);
+            color: #ffffff;
+            padding: 50px 20px 60px 20px;
+            text-align: center;
+            border-bottom: 4px solid #3b82f6; /* Linha de destaque azul */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            margin: 15px 0 0 0;
+            font-size: 18px;
+            color: #b0b0b0;
+        }
+
+        /* Estilo da Barra de Navegação (Abas) - Formato de pílula flutuante */
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            background-color: #2d2d30;
+            padding: 10px 15px;
+            border-radius: 50px;
+            max-width: 850px;
+            margin: -30px auto 40px auto; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: #cfcfcf;
+            padding: 14px 24px;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #3e3e42;
+            color: #ffffff;
+        }
+
+        nav a.active {
+            background-color: #3b82f6; /* Azul moderno para a aba ativa */
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Estilo do Container de Conteúdo */
+        .container {
+            padding: 0 20px 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 500px;
+        }
+
+        /* Controle de exibição das abas */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Títulos gerais */
+        h2 {
+            color: #ffffff;
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: 600;
+        }
+
+        /* ========================================= */
+        /* Estilos dos Módulos em Lista              */
+        /* ========================================= */
+        .modulo-destaque {
+            background-color: #ffffff;
+            color: #333333;
+            border-radius: 20px;
+            padding: 40px 20px;
+            margin-bottom: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .modulo-destaque h3 {
+            font-size: 26px;
+            color: #1e1e1e;
+            margin-top: 0;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            display: inline-block;
+        }
+
+        .modulo-destaque p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555555;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .tela-img-grande {
+            max-width: 90%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin: 20px auto 30px auto;
+            display: block;
+            border: 1px solid #eaeaea;
+        }
+
+        /* ========================================= */
+        /* Área do Cliente (Login e Cadastro)       */
+        /* ========================================= */
+        .form-container {
+            background-color: #ffffff;
+            color: #333;
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .btn-acao {
+            width: 100%;
+            background-color: #3b82f6;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-acao:hover {
+            background-color: #2563eb;
+        }
+
+        .toggle-link {
+            display: block;
+            margin-top: 20px;
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Área de Download Protegida */
+        #area-download {
+            display: none; /* Escondido por padrão */
+            text-align: center;
+            background-color: #ffffff;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 50px;
+            border-radius: 20px;
+            animation: fadeIn 0.6s ease;
+        }
+
+        /* Botões e Outros */
+        .card-large {
+            background-color: #ffffff;
+            color: #333333;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .btn-verde {
+            display: inline-block;
+            background-color: #10b981; 
+            color: white;
+            padding: 20px 45px;
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: 800;
+            border-radius: 50px;
+            margin-top: 35px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-verde:hover {
+            background-color: #059669;
+            transform: translateY(-3px);
+        }
+
+        .box-contato {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+            font-size: 14px;
+            color: #888888;
+            background-color: #151515;
+            border-top: 1px solid #333;
+        }
+
+        .versao {
+            font-size: 12px;
+            color: #555;
+            margin-top: 15px !important;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Sistema de Gestão Completo</h1>
+        <p>Financeiro, Cadastro de Produtos, Serviços, Clientes e Módulo de Vendas</p>
+    </header>
+
+    <nav>
+        <a onclick="abrirAba(event, 'sobre')" class="tab-link active">Sobre o Programa</a>
+        <a onclick="abrirAba(event, 'tutoriais')" class="tab-link">Tutoriais</a>
+        <a onclick="abrirAba(event, 'adquirir')" class="tab-link">Adquirir</a>
+        <a onclick="abrirAba(event, 'cliente')" class="tab-link">Área do Cliente</a>
+        <a onclick="abrirAba(event, 'suporte')" class="tab-link">Suporte</a>
+    </nav>
+
+    <div class="container">
+        
+        <div id="sobre" class="tab-content active">
+            <h2>Conheça os Módulos do Sistema</h2>
+            
+            <div class="modulo-destaque">
+                <h3>Tela Home</h3>
+                <img src="Home.png" alt="Tela Home" class="tela-img-grande">
+                <p>O painel central do seu negócio. Acompanhe atalhos rápidos e tenha uma visão geral das suas operações logo na tela inicial.</p>
+            </div>
+
+            <div class="modulo-destaque">
+                <h3>Módulo Clientes</h3>
+                <img src="Modulo Clientes.png" alt="Módulo Clientes" class="tela-img-grande">
+                <p>Mantenha a base de dados organizada com histórico e informações de contato de fácil acesso.</p>
+            </div>
+
+            <div class="modulo-destaque">
+                <h3>Módulo Produtos e Serviços</h3>
+                <img src="Modulo Produtos e Serviços.png" alt="Produtos e Serviços" class="tela-img-grande">
+                <p>Cadastre e gerencie seu estoque e tabela de serviços de forma detalhada e intuitiva.</p>
+            </div>
+
+            <div class="modulo-destaque">
+                <h3>Módulo Financeiro</h3>
+                <img src="Modulo Financeiro.png" alt="Financeiro" class="tela-img-grande">
+                <p>Controle fluxo de caixa, contas a pagar e receber, garantindo a saúde financeira da sua empresa.</p>
+            </div>
+
+            <div class="modulo-destaque">
+                <h3>Módulo Vendas</h3>
+                <img src="Modulo Vendas.png" alt="Vendas" class="tela-img-grande">
+                <p>Interface ágil para registro de vendas, emissão de comprovantes e baixa automática de estoque.</p>
+            </div>
+        </div>
+
+        <div id="tutoriais" class="tab-content">
+            <h2>Tutoriais em Vídeo</h2>
+            <div class="card-large">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/SEU_ID_DO_VIDEO_AQUI" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+
+        <div id="adquirir" class="tab-content" style="text-align: center;">
+            <h2>Adquira Agora</h2>
+            <div class="card-large">
+                <img src="Home.png" alt="Home" class="tela-img-grande">
+                <a href="https://wa.me/5519991401954?text=Olá,%20tenho%20interesse%20no%20Sistema%20de%20Gestão." class="btn-verde" target="_blank">
+                    COMPRE AQUI OU TESTE GRATUITO
+                </a>
+            </div>
+        </div>
+
+        <div id="cliente" class="tab-content">
+            <h2>Área de Downloads</h2>
+            
+            <div id="sessao-login" class="form-container">
+                <h3 id="titulo-form">Acesse sua conta</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 25px;">Somente clientes cadastrados podem baixar o programa.</p>
+                
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="email" placeholder="Seu e-mail cadastrado">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="senha" placeholder="Sua senha">
+                </div>
+                
+                <button class="btn-acao" onclick="loginSupabase()">Entrar e Acessar Downloads</button>
+                
+                <a href="https://wa.me/5519991401954?text=Olá,%20gostaria%20de%20solicitar%20meu%20cadastro%20para%20acessar%20os%20downloads." target="_blank" class="toggle-link">Não tem uma conta? Solicite o cadastro aqui</a>
+            </div>
+
+            <div id="area-download">
+                <h3 style="color: #10b981;">Acesso Liberado!</h3>
+                <p>Olá, Cliente! Você já pode realizar o download da versão mais recente do nosso sistema abaixo.</p>
+                
+                <div style="margin: 30px 0; padding: 20px; border: 1px dashed #ccc; border-radius: 10px;">
+                    <strong>Versão Atual: 26.05.11</strong><br>
+                    <span style="font-size: 13px; color: #888;">Tamanho: 45MB | Formato: .EXE</span>
+                </div>
+
+                <a href="https://drive.google.com/open?id=1tpi7QvDGZKf_eTRm7ocKZoOt-L5ogY1t&usp=drive_fs" class="btn-verde" style="background-color: #3b82f6; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);" target="_blank">
+                    BAIXAR PROGRAMA AGORA
+                </a>
+                
+                <p style="margin-top: 30px;"><a href="#" onclick="location.reload()" style="color: #666; font-size: 12px;">Sair da conta</a></p>
+            </div>
+        </div>
+
+        <div id="suporte" class="tab-content">
+            <h2>Suporte Técnico</h2>
+            <div class="card-large">
+                <div class="box-contato">
+                    <p style="font-size: 32px; margin: 10px 0;">
+                        <strong><a href="https://wa.me/5519991401954" target="_blank" style="color: #25D366; text-decoration: none;">(19) 99140-1954</a></strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <footer>
+        <p>Desenvolvido por WP Assistência</p>
+        <p>Todos Direitos Reservados</p>
+        <p class="versao">Versão 26.05.11</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // CONFIGURAÇÃO DO SUPABASE
+        // ==========================================
+        const supabaseUrl = 'https://bkugwrpopcmzojdwccuf.supabase.co';
+        const supabaseKey = 'sb_publishable_0ugBbYTblY77eZFIX3_5qw_UP1keeMz';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // ==========================================
+        // FUNÇÕES DO SITE
+        // ==========================================
+
+        // Função para troca de abas (Mantida intacta)
+        function abrirAba(evento, idAba) {
+            var conteudos = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < conteudos.length; i++) {
+                conteudos[i].classList.remove("active");
+            }
+            var links = document.getElementsByClassName("tab-link");
+            for (var i = 0; i < links.length; i++) {
+                links[i].classList.remove("active");
+            }
+            document.getElementById(idAba).classList.add("active");
+            evento.currentTarget.classList.add("active");
+        }
+
+        // Função Antiga (Mantida intacta conforme solicitado)
+        function simularAcesso() {
+            var email = document.getElementById('email').value;
+            var senha = document.getElementById('senha').value;
+
+            if(email === "" || senha === "") {
+                alert("Por favor, preencha o e-mail e a senha para continuar.");
+            } else {
+                document.getElementById('sessao-login').style.display = 'none';
+                document.getElementById('area-download').style.display = 'block';
+                window.scrollTo(0, 300);
+            }
+        }
+
+        // Nova Função de Login usando o Banco de Dados do Supabase
+        async function loginSupabase() {
+            var emailInput = document.getElementById('email').value;
+            var senhaInput = document.getElementById('senha').value;
+
+            if(emailInput === "" || senhaInput === "") {
+                alert("Por favor, preencha o e-mail e a senha para continuar.");
+                return; // Para a execução da função aqui
+            }
+
+            // Faz a consulta na tabela 'clientes' do Supabase
+            const { data, error } = await supabase
+                .from('clientes')
+                .select('*')
+                .eq('email', emailInput)
+                .eq('senha', senhaInput);
+
+            if (error) {
+                console.error("Erro na consulta do banco:", error);
+                alert("Ocorreu um erro ao conectar com o banco de dados.");
+                return;
+            }
+
+            // Verifica se retornou algum dado (se o e-mail e senha conferem)
+            if (data && data.length > 0) {
+                // Login com sucesso
+                document.getElementById('sessao-login').style.display = 'none';
+                document.getElementById('area-download').style.display = 'block';
+                window.scrollTo(0, 300);
+            } else {
+                // E-mail ou senha não encontrados na tabela
+                alert("E-mail ou senha incorretos. Verifique seus dados e tente novamente.");
+            }
+        }
+    </script>
+
+</body>
+</html>
