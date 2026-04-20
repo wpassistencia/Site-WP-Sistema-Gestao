@@ -13,7 +13,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #1e1e1e; /* Fundo escuro igual ao da foto */
+            background-color: #1e1e1e;
             color: #f5f5f5;
         }
 
@@ -23,7 +23,7 @@
             color: #ffffff;
             padding: 50px 20px 60px 20px;
             text-align: center;
-            border-bottom: 4px solid #3b82f6; /* Linha de destaque azul */
+            border-bottom: 4px solid #3b82f6;
         }
 
         header h1 {
@@ -71,7 +71,7 @@
         }
 
         nav a.active {
-            background-color: #3b82f6; /* Azul moderno para a aba ativa */
+            background-color: #3b82f6;
             color: #ffffff;
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
         }
@@ -211,7 +211,7 @@
 
         /* Área de Download Protegida */
         #area-download {
-            display: none; /* Escondido por padrão */
+            display: none; 
             text-align: center;
             background-color: #ffffff;
             color: #333;
@@ -407,17 +407,8 @@
 
     <script>
         // ==========================================
-        // CONFIGURAÇÃO DO SUPABASE
+        // 1. FUNÇÕES VITAIS PRIMEIRO (Garante que as abas sempre funcionem)
         // ==========================================
-        const supabaseUrl = 'https://bkugwrpopcmzojdwccuf.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrdWd3cnBvcGNtem9qZHdjY3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjQ4MTEsImV4cCI6MjA5MTc0MDgxMX0.JT0OIwymbZu-BfvK6PaYne9p9RBp3yDw4h3sYO0MQA4';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        // ==========================================
-        // FUNÇÕES DO SITE
-        // ==========================================
-
-        // Função para troca de abas (Mantida intacta)
         function abrirAba(evento, idAba) {
             var conteudos = document.getElementsByClassName("tab-content");
             for (var i = 0; i < conteudos.length; i++) {
@@ -431,7 +422,6 @@
             evento.currentTarget.classList.add("active");
         }
 
-        // Função Antiga (Mantida intacta conforme solicitado)
         function simularAcesso() {
             var email = document.getElementById('email').value;
             var senha = document.getElementById('senha').value;
@@ -445,38 +435,62 @@
             }
         }
 
-        // Nova Função de Login usando o Banco de Dados do Supabase
+        // ==========================================
+        // 2. CONFIGURAÇÃO DO SUPABASE BLINDADA
+        // ==========================================
+        const supabaseUrl = 'https://bkugwrpopcmzojdwccuf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrdWd3cnBvcGNtem9qZHdjY3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjQ4MTEsImV4cCI6MjA5MTc0MDgxMX0.JT0OIwymbZu-BfvK6PaYne9p9RBp3yDw4h3sYO0MQA4';
+        let supabase;
+
+        try {
+            if (typeof window.supabase !== 'undefined') {
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            } else {
+                console.log("Aviso: Supabase bloqueado pelo navegador. Login indisponível no momento.");
+            }
+        } catch (error) {
+            console.log("Erro de conexão com o banco de dados.");
+        }
+
+        // ==========================================
+        // 3. FUNÇÃO DE LOGIN
+        // ==========================================
         async function loginSupabase() {
+            if (!supabase) {
+                alert("Conexão com o banco de dados bloqueada pelo seu navegador (verifique seu AdBlock ou Antivírus).");
+                return;
+            }
+
             var emailInput = document.getElementById('email').value;
             var senhaInput = document.getElementById('senha').value;
 
             if(emailInput === "" || senhaInput === "") {
                 alert("Por favor, preencha o e-mail e a senha para continuar.");
-                return; // Para a execução da função aqui
-            }
-
-            // Faz a consulta na tabela 'clientes' do Supabase
-            const { data, error } = await supabase
-                .from('clientes')
-                .select('*')
-                .eq('email', emailInput)
-                .eq('senha', senhaInput);
-
-            if (error) {
-                console.error("Erro na consulta do banco:", error);
-                alert("Ocorreu um erro ao conectar com o banco de dados.");
                 return;
             }
 
-            // Verifica se retornou algum dado (se o e-mail e senha conferem)
-            if (data && data.length > 0) {
-                // Login com sucesso
-                document.getElementById('sessao-login').style.display = 'none';
-                document.getElementById('area-download').style.display = 'block';
-                window.scrollTo(0, 300);
-            } else {
-                // E-mail ou senha não encontrados na tabela
-                alert("E-mail ou senha incorretos. Verifique seus dados e tente novamente.");
+            try {
+                const { data, error } = await supabase
+                    .from('clientes')
+                    .select('*')
+                    .eq('email', emailInput)
+                    .eq('senha', senhaInput);
+
+                if (error) {
+                    console.error("Erro na consulta do banco:", error);
+                    alert("Ocorreu um erro ao conectar com o banco de dados.");
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    document.getElementById('sessao-login').style.display = 'none';
+                    document.getElementById('area-download').style.display = 'block';
+                    window.scrollTo(0, 300);
+                } else {
+                    alert("E-mail ou senha incorretos. Verifique seus dados e tente novamente.");
+                }
+            } catch (err) {
+                alert("Erro ao tentar fazer login. Verifique sua conexão.");
             }
         }
     </script>
