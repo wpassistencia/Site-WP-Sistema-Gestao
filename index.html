@@ -321,8 +321,8 @@
         <div id="tutoriais" class="tab-content">
             <h2>Tutoriais em Vídeo</h2>
             <div class="card-large">
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/watch?v=8izrPjAe9_U" frameborder="0" allowfullscreen></iframe>
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 10px;">
+                    <iframe src="https://www.youtube.com/embed/8izrPjAe9_U" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>
         </div>
@@ -406,6 +406,8 @@
     <script>
         const supabaseUrl = 'https://bkugwrpopcmzojdwccuf.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrdWd3cnBvcGNtem9qZHdjY3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjQ4MTEsImV4cCI6MjA5MTc0MDgxMX0.JT0OIwymbZu-BfvK6PaYne9p9RBp3yDw4h3sYO0MQA4';
+        
+        // Alterado o nome da variável para dbClient para evitar conflito com a biblioteca global 'supabase'
         let dbClient;
 
         window.onload = function() {
